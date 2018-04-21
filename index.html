@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>English to Morse Translator - Tehjean Powell</title>
+
+    <link rel="stylesheet" href="./angular-confirm.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto" rel="stylesheet">
+
+    <style>
+        body{
+            position: relative;
+            padding: 40px;
+            width:100vw;
+            overflow-x: hidden;
+            font-family: 'Open Sans', sans-serif; 
+            background-color: #FF6CA8;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+        #wrapper{
+            position: relative;
+            left:50%;
+            width:80%;
+            max-width: 500px;
+            transform: translateX(-50%);
+            display: inline-block;
+        }
+        header{
+            position: relative;
+            width: 100%;
+            text-align: center;
+            color: #FFF;
+            text-transform: uppercase;
+            /*text-decoration: underline;*/
+            margin-bottom:40px;
+        }
+        .input_parent{
+            position: relative;
+            width:100%;
+            height: auto;
+            display: inline-block;
+        }
+        textarea{
+            position: relative;
+            width:calc(100% - 30px);
+            resize:vertical;
+            min-height: 150px;
+            margin:5px 0 0 0;
+            outline:none;
+            border: none;
+            padding:15px;
+            font-size: 16px;        
+            color: rgba(0,0,0,0.8);
+            border-radius:1px;
+        }
+        textarea#MorseTextArea{
+            font-size: 20px;
+            font-weight: bold;
+        }
+        label{
+            position: relative;
+            font-size: 14px;
+            /*color: rgba(255,255,255,0.9);
+            color: rgba(202, 44, 104,1);*/
+            color: rgba(170, 12, 72,1);
+            font-weight: bold;
+            margin: 10px;
+        }
+        button{
+            position: relative;
+            width:100%;
+            padding:20px;
+            margin: -5px 0 30px 0;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: rgba(255,255,255,0.3);
+            transition: all 0.35s ease-in-out;
+        }
+        button:hover{
+            color: #fff;
+            background-color: #EA4C88;
+            transition: all 0.35s ease-in-out;
+        }
+        footer{
+            padding-top: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body ng-app="app" ng-controller="ctrl_main">
+    <span id="wrapper">
+        <header>
+            <h1>English to Morse Code</h1>
+        </header>
+        <span class="input_parent">
+            <label>English</label>
+            <textarea id="EnglishTextArea" placeholder="Write some english here..." ng-model="english_area" ng-change="english_change()" rows="8"></textarea>
+            <button ng-click="copyEnglish()">Copy to Clipboard</button>
+        </span>
+        <span class="input_parent">
+            <label>Morse Code</label>
+            <textarea id="MorseTextArea" placeholder="Write some Morse Code here..." ng-model="morse_area" ng-change="morse_change()" rows="8"></textarea>
+            <button ng-click="copyMorse()">Copy to Clipboard</button>
+        </span>
+    </span>
+
+    <footer>
+        teejae wrote this...
+    </footer>
+
+    <script src="./jquery-1.9.1.min.js"></script>
+    <script src="./angular.min.js"></script>
+    <script src="./angular-confirm.min.js"></script>
+    <script>
+        var leDictionary = {
+            "-----":"0",
+            ".----":"1",
+            "..---":"2",
+            "...--":"3",
+            "....-":"4",
+            ".....":"5",
+            "-....":"6",
+            "--...":"7",
+            "---..":"8",
+            "----.":"9",
+            ".-":"a",
+            "-...":"b",
+            "-.-.":"c",
+            "-..":"d",
+            ".":"e",
+            "..-.":"f",
+            "--.":"g",
+            "....":"h",
+            "..":"i",
+            ".---":"j",
+            "-.-":"k",
+            ".-..":"l",
+            "--":"m",
+            "-.":"n",
+            "---":"o",
+            ".--.":"p",
+            "--.-":"q",
+            ".-.":"r",
+            "...":"s",
+            "-":"t",
+            "..-":"u",
+            "...-":"v",
+            ".--":"w",
+            "-..-":"x",
+            "-.--":"y",
+            "--..":"z",
+            "/":" ",
+            "-·-·--":"!",
+            "·-·-·-":".",
+            "--··--":","
+        };
+
+        function swap(json){
+            var ret = {};
+            for(var key in json){
+                ret[json[key]] = key;
+            }
+            return ret;
+        }
+        
+        function EnglishToMorse(_text){
+            var tempArr = swap(leDictionary);
+            var tempStr = "";
+            _text = _text.toLowerCase();
+            for(i = 0; i < _text.length;i++){
+                tempStr += ((typeof tempArr[_text[i]] != 'undefined')?tempArr[_text[i]] + " " : "");
+            }
+            return tempStr;
+        }
+
+        function MorseToEnglish(_text){
+            var tempStr = "";
+            var tempArr = _text.split(" ");
+            for(i = 0; i < tempArr.length;i++){
+                tempStr += ((typeof leDictionary[tempArr[i].toString()] != 'undefined')?leDictionary[tempArr[i].toString()] + "" : "");
+            }
+            return tempStr;
+        }
+
+        function CopyToClipboard(_id) {
+            var copyText = document.getElementById(_id);
+            copyText.select();
+            document.execCommand("Copy");
+        }
+    </script>
+    <script>
+        var app = angular.module('app', ['cp.ngConfirm']);
+        app.controller('ctrl_main', function ($scope, $ngConfirm) {
+            $scope.english_area = "some english";
+            $scope.morse_area = EnglishToMorse($scope.english_area);
+            $scope.english_change = function(){
+                $scope.morse_area = EnglishToMorse($scope.english_area);
+            }
+            $scope.morse_change = function(){
+                $scope.english_area = MorseToEnglish($scope.morse_area);
+            }
+            $scope.copyEnglish = function(){
+                CopyToClipboard("EnglishTextArea");
+                $ngConfirm({
+                    title: '',
+                    escapeKey: true,
+                    autoClose: 'close|5000',
+                    backgroundDismiss:'true',
+                    useBootstrap:false,
+                    boxWidth: '30%',
+                    content:'English Translation copied to Clipboard!',
+                    buttons:{
+                        close: {
+                            text: 'Okay'
+                        }
+                    }
+                });
+            }
+
+            $scope.copyMorse = function(){
+                CopyToClipboard("MorseTextArea");
+                $ngConfirm({
+                    title: '',
+                    escapeKey: true,
+                    autoClose: 'close|5000',
+                    backgroundDismiss:'true',
+                    useBootstrap:false,
+                    boxWidth: '30%',
+                    content:'Morse Code copied to Clipboard!',
+                    buttons:{
+                        close: {
+                            text: 'Okay'
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
